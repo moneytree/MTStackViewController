@@ -94,6 +94,22 @@ typedef enum
 // Default: nil
 @property (nonatomic, strong) MTStackContainerView* rightContainerView;
 
+/**
+ * When `YES`, if there is a tap on the content view controller when any of the
+ * revealed VC is in the revealed mode, will close those.
+ * 
+ * Default: YES
+ */
+@property (assign, nonatomic) BOOL shouldCloseRevealedViewControllerOnTap;
+
+/**
+ * When `YES`, touches on the content view will be disabled when revealing
+ * any left or right view controller. (opening the "stack")
+ * 
+ * Default: YES
+ */
+@property (assign, nonatomic) BOOL shouldDisableTouchesOnContentViewOnReveal;
+
 // How far the content controller's X coordinate should be from point 0.0f (left to right)
 // before the left controller should be considered revealed. This will automatically be
 // converted for the right controller.
@@ -223,6 +239,13 @@ typedef enum
 @property (nonatomic, readonly) BOOL shouldAllowPanning;
 
 @optional
+
+/**
+ * An optional method to enable/disable panning each time the panning gesture recognizer
+ * change its state to 'Possible' and it could be used to detect the location of the touches.
+ *
+ */
+- (BOOL)shouldBeginPanningWithPanGestureRecognizer:(UIPanGestureRecognizer *)panGestureRecognizer;
 
 - (void)stackViewControllerWillBeginPanning:(MTStackViewController *)stackViewController;
 - (void)stackViewControllerDidEndPanning:(MTStackViewController *)stackViewController;
