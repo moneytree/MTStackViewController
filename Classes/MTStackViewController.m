@@ -117,6 +117,10 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
     CGRect _initialContentControllerFrame;
     UITapGestureRecognizer *_tapGestureRecognizer;
 }
+
+// Added property to enable private variable exposed.
+@property (strong, nonatomic) UIPanGestureRecognizer *panGestureRecognizer;
+
 @end
 
 @interface MTStackViewController () <UIGestureRecognizerDelegate>
@@ -124,6 +128,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 @end
 
 @implementation MTStackViewController
+@synthesize panGestureRecognizer = _panGestureRecognizer;
 
 #pragma mark - UIViewController Overrides
 
@@ -169,7 +174,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
     
     UIView *transitionView = [[UIView alloc] initWithFrame:screenBounds];
     [_contentContainerView addSubview:transitionView];
-    
+  
     _tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGestureRecognizerDidTap:)];
     
     _panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureRecognizerDidPan:)];
@@ -185,6 +190,8 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
     [self setMaxShadowOpacity:1.0f];
     [self setShadowOffset:CGSizeZero];
     [self setShadowColor:[UIColor blackColor]];
+    [self setShouldCloseRevealedViewControllerOnTap:YES];
+    [self setShouldDisableTouchesOnContentViewOnReveal:YES];
 }
 
 - (void)loadView
@@ -399,7 +406,14 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer
 {
     BOOL shouldBegin = [self contentContainerView:_contentContainerView panGestureRecognizerShouldPan:(UIPanGestureRecognizer *)gestureRecognizer];
-    
+  
+    id <MTStackChildViewController> navigationChild = [self stackChildViewControllerForViewController:[self contentViewController]];
+    if ([navigationChild respondsToSelector:@selector(shouldBeginPanningWithPanGestureRecognizer:)])
+    {
+      NSAssert([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]], @"This is only for panGestureRecognizer delegate. I am: %@", gestureRecognizer);
+      shouldBegin = [navigationChild shouldBeginPanningWithPanGestureRecognizer:(UIPanGestureRecognizer *)gestureRecognizer];
+    }
+  
     return shouldBegin;
 }
 
@@ -407,7 +421,14 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 
 - (void)tapGestureRecognizerDidTap:(UITapGestureRecognizer *)tapGestureRecognizer
 {
-    [self hideLeftViewController];
+    if ([self isLeftViewControllerVisible])
+    {
+        [self hideLeftViewController];
+    }
+    else if ([self isRightViewControllerVisible])
+    {
+        [self hideRightViewController];
+    }
 }
 
 - (void)setContentViewController:(UIViewController *)contentViewController hideLeftViewController:(BOOL)hideLeftViewController animated:(BOOL)animated
@@ -660,12 +681,17 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                              }
                              
                              [self setContentViewUserInteractionEnabled:NO];
-                             [_contentContainerView addGestureRecognizer:_tapGestureRecognizer];
-                             
-                             if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealLeftViewController:)])
-                             {
+                           
+                              // Only add the tapGestureRecognizer when the `shouldCloseRevealedViewControllerOnTap` is YES.
+                              if (self.shouldCloseRevealedViewControllerOnTap)
+                              {
+                                  [_contentContainerView addGestureRecognizer:_tapGestureRecognizer];
+                              }
+                           
+                              if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealLeftViewController:)])
+                              {
                                  [[self delegate] stackViewController:self didRevealLeftViewController:[self leftViewController]];
-                             }
+                              }
                              
                          }];
     }
@@ -723,12 +749,17 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                                  [[_rightContainerView layer] setShouldRasterize:NO];
                              }
                              [self setContentViewUserInteractionEnabled:NO];
-                             [_contentContainerView addGestureRecognizer:_tapGestureRecognizer];
+
+                              // Only add the tapGestureRecognizer when the `shouldCloseRevealedViewControllerOnTap` is YES.
+                              if (self.shouldCloseRevealedViewControllerOnTap)
+                              {
+                                  [_contentContainerView addGestureRecognizer:_tapGestureRecognizer];
+                              }
                              
-                             if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealLeftViewController:)])
-                             {
-                                 [[self delegate] stackViewController:self didRevealRightViewController:[self leftViewController]];
-                             }
+                              if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealLeftViewController:)])
+                              {
+                                  [[self delegate] stackViewController:self didRevealRightViewController:[self leftViewController]];
+                              }
                              
                          }];
     }
@@ -823,7 +854,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                          }
                          
                          [self setContentViewUserInteractionEnabled:YES];
-                         [_contentContainerView removeGestureRecognizer:_tapGestureRecognizer];
+                         [_tapGestureRecognizer.view removeGestureRecognizer:_tapGestureRecognizer];
                          
                          if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealContentViewController:)])
                          {
@@ -878,6 +909,13 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 
 - (void)setContentViewUserInteractionEnabled:(BOOL)userInteractionEnabled
 {
+    if (self.shouldDisableTouchesOnContentViewOnReveal == NO && userInteractionEnabled == NO)
+    {
+        // Dont disable any user interaction on contentView if the value of `shouldDisableTouchesOnContentViewOnReveal`
+        // is `NO`
+        return;
+    }
+  
     UIViewController *contentViewController = [self contentViewController];
     if ([contentViewController isKindOfClass:[UINavigationController class]])
     {
