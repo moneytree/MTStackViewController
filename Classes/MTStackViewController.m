@@ -365,7 +365,12 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 
 - (BOOL)isRightViewControllerVisible
 {
-    return CGRectGetMinX([_contentContainerView frame]) == -CGRectGetWidth([_contentContainerView bounds]) + (CGRectGetWidth([_contentContainerView bounds]) - [self slideOffset]);
+    BOOL isVisible = CGRectGetMinX([_contentContainerView frame]) == -CGRectGetWidth([_contentContainerView bounds]) + (CGRectGetWidth([_contentContainerView bounds]) - [self slideOffset]);
+    if (self.resizeContentViewWhenReveal)
+    {
+      isVisible = CGRectGetWidth([_contentContainerView frame]) < CGRectGetWidth(self.view.bounds);
+    }
+    return isVisible;
 }
 
 #pragma mark - UIGestureRecognizerDelegate Methods
@@ -620,8 +625,11 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 
 - (void)revealLeftViewControllerAnimated:(BOOL)animated
 {
-    if ([self isLeftViewControllerEnabled])
+    if ([self isLeftViewControllerEnabled] && [self isLeftViewControllerVisible] == NO)
     {
+        //TODO: Resize is not yet supported on the left VC.
+        NSAssert((self.resizeContentViewWhenReveal == NO), @"Resize content view when reveal with the left view controller is not yet supported.");
+      
         [_rightContainerView setHidden:YES];
         [_leftContainerView setHidden:NO];
         
@@ -704,7 +712,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 
 - (void)revealRightViewControllerAnimated:(BOOL)animated
 {
-    if ([self isRightViewControllerEnabled])
+    if ([self isRightViewControllerEnabled] && [self isRightViewControllerVisible] == NO)
     {
         [_rightContainerView setHidden:NO];
         [_leftContainerView setHidden:YES];
@@ -727,16 +735,25 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                                                 side:MTStackViewControllerPositionRight
                                              toFrame:containerFrame
                                         withDuration:self.slideAnimationDuration];
-        
+      
+        // Calculate the frame.
+        CGFloat slideCutOff = CGRectGetWidth([_contentContainerView bounds]) - [self slideOffset];
+        CGFloat finalX = -CGRectGetWidth([_contentContainerView bounds]) + slideCutOff;
+        CGFloat finalWidth = CGRectGetWidth([_contentContainerView frame]);
+        if (self.resizeContentViewWhenReveal)
+        {
+            // if we are resizing, the origin X stays and the width has to be substracted with the
+            // slideCutOff
+            finalX = CGRectGetMinX([_contentContainerView bounds]);
+            finalWidth = finalWidth - slideCutOff;
+        }
+        CGRect finalFrame = CGRectMake(finalX, CGRectGetMinY([_contentContainerView frame]), finalWidth, CGRectGetHeight([_contentContainerView frame]));
+      
         [UIView animateWithDuration:animated ? [self slideAnimationDuration] : 0.0f
                               delay:0.0f
                             options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionBeginFromCurrentState
                          animations:^{
-                             
-                             [_contentContainerView setFrame:CGRectMake(-CGRectGetWidth([_contentContainerView bounds]) + (CGRectGetWidth([_contentContainerView bounds]) - [self slideOffset]),
-                                    CGRectGetMinY([_contentContainerView frame]),
-                                    CGRectGetWidth([_contentContainerView frame]),
-                                    CGRectGetHeight([_contentContainerView frame]))];
+                             [_contentContainerView setFrame:finalFrame];
                              [[_contentContainerView layer] setShadowRadius:[self minShadowRadius]];
                              [[_contentContainerView layer] setShadowOpacity:[self minShadowOpacity]];
                              
@@ -756,9 +773,9 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                                   [_contentContainerView addGestureRecognizer:_tapGestureRecognizer];
                               }
                              
-                              if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealLeftViewController:)])
+                              if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealRightViewController:)])
                               {
-                                  [[self delegate] stackViewController:self didRevealRightViewController:[self leftViewController]];
+                                  [[self delegate] stackViewController:self didRevealRightViewController:[self rightViewController]];
                               }
                              
                          }];
@@ -816,17 +833,22 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
         }
     }
 
+    //TODO: Do the same with the left (if resizeContentViewWhenReveal is `NO`
     CGRect leftFrame = CGRectMake(0.0f, CGRectGetMinY([_leftContainerView frame]),
         CGRectGetWidth([_leftContainerView frame]), CGRectGetHeight([_leftContainerView frame]));
     
-    CGRect rightFrame = CGRectMake(CGRectGetWidth(_contentContainerView.frame) - self.slideOffset,
-                                   CGRectGetMinY([_rightContainerView frame]),
-                                   CGRectGetWidth([_rightContainerView frame]), CGRectGetHeight([_rightContainerView frame]));
-    
-    CGRect contentFrame = CGRectMake(0.0f,
-                                     CGRectGetMinY([_contentContainerView frame]),
-                                     CGRectGetWidth([_contentContainerView frame]),
-                                     CGRectGetHeight([_contentContainerView frame]));
+    CGRect rightFrame = [_rightContainerView frame];
+    if (self.resizeContentViewWhenReveal == NO)
+    {
+        rightFrame.origin.x = CGRectGetWidth(_contentContainerView.frame) - self.slideOffset;
+    }
+  
+    CGRect contentFrame = [_contentContainerView frame];
+    contentFrame.origin.x = 0.0f;
+    if (self.resizeContentViewWhenReveal)
+    {
+        contentFrame.size.width = CGRectGetWidth(contentFrame) + self.slideOffset;
+    }
     
     [self.leftContainerView stackViewController:self show:NO
                                            side:MTStackViewControllerPositionLeft
@@ -843,8 +865,14 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                         options:UIViewAnimationOptionCurveEaseOut |UIViewAnimationOptionBeginFromCurrentState
                      animations:^{
                          [_contentContainerView setFrame:contentFrame];
-                         [[_contentContainerView layer] setShadowRadius:[self maxShadowRadius]];
-                         [[_contentContainerView layer] setShadowOpacity:[self maxShadowOpacity]];
+                       
+                          // Only does this animation when we are sliding, otherwise its
+                          // going to negate the "paralax" effect on the container view.
+                          if (self.resizeContentViewWhenReveal == NO)
+                          {
+                              [[_contentContainerView layer] setShadowRadius:[self maxShadowRadius]];
+                              [[_contentContainerView layer] setShadowOpacity:[self maxShadowOpacity]];
+                          }
                      } completion:^(BOOL finished) {
                          if ([self rasterizesViewsDuringAnimation])
                          {
