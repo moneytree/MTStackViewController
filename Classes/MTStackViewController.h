@@ -217,7 +217,7 @@ typedef enum
 // When `YES`, this would resize the content view when revealing either side
 // Either right or left, it should resize the content view instead.
 // Default: NO
-@property (assign, nonatomic) BOOL resizeContentViewWhenReveal;
+@property (assign, nonatomic) BOOL shouldResizeContentViewOnReveal;
 
 
 // Sets the contentViewController, and will optionally hide the left view controller if it is visible.
