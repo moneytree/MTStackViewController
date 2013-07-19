@@ -83,7 +83,6 @@ typedef enum
 // Represents the middle view controller on the "stack".
 // Default: nil
 @property (nonatomic, strong) UIViewController *contentViewController;
-
 @property (nonatomic, strong) MTStackContentContainerView* contentContainerView;
 
 // Represents the left most container view on the "stack". Handles animation
