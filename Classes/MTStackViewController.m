@@ -553,7 +553,8 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
     }
   
     CGRect contentViewRect = [_contentContainerView frame];
-    CGFloat contentViewFrameX = CGRectGetMinX(_initialContentControllerFrame) - (_initialPanGestureLocation.x - location.x);
+    CGFloat xDifference = _initialPanGestureLocation.x - location.x;
+    CGFloat contentViewFrameX = CGRectGetMinX(_initialContentControllerFrame) - xDifference;
     if (contentViewFrameX < -CGRectGetWidth([_contentContainerView bounds]) + (CGRectGetWidth([_contentContainerView bounds]) - [self slideOffset]))
     {
       contentViewFrameX = -CGRectGetWidth([_contentContainerView bounds]) + (CGRectGetWidth([_contentContainerView bounds]) - [self slideOffset]);
@@ -566,7 +567,15 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
     // Depending whether we are resizing of sliding, set the appropriate rect's component
     if (self.shouldResizeContentViewOnReveal)
     {
-        contentViewRect.size.width = CGRectGetWidth(self.view.bounds) + contentViewFrameX;
+        contentViewRect.size.width = CGRectGetWidth(_initialContentControllerFrame) + contentViewFrameX;
+      
+        // OK, this is for the rolling up (pan to the right) -- patch
+        // to not be able to roll out below the slideOffset
+        if (contentViewRect.size.width <= [self slideOffset] && contentViewFrameX <= 0)
+        {
+          contentViewRect.size.width = [self slideOffset];
+          contentViewFrameX = 0.0f;
+        }
     }
     else
     {
@@ -574,9 +583,17 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
     }
     
     if (([self isLeftViewControllerEnabled] && contentViewFrameX > 0.0f) ||
-        ([self isRightViewControllerEnabled] && contentViewFrameX < 0.0f))
+        ([self isRightViewControllerEnabled] && contentViewFrameX < 0.0f) ||
+        ([self isRightViewControllerEnabled] && self.shouldResizeContentViewOnReveal && contentViewFrameX > 0.0f))
     {
         CGFloat percentRevealed = (fabsf(contentViewFrameX) / [self slideOffset]);
+      
+        // Since we are rolling out to the right (revealing the content view controller)
+        // swap the percent revealed
+        if ([self isRightViewControllerEnabled] && self.shouldResizeContentViewOnReveal && contentViewFrameX > 0.0f)
+        {
+          percentRevealed = 1-percentRevealed;
+        }
         
         [containerView stackViewController:self anmimateToFame:containerFrame side:side withOffset:percentRevealed];
 
@@ -606,7 +623,10 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 
 - (void)snapContentViewController
 {
-    if (CGRectGetMinX([_contentContainerView frame]) <= _leftSnapThreshold && CGRectGetMinX([_contentContainerView frame]) >= 0.0f)
+    CGFloat contentWidth = CGRectGetWidth([_contentContainerView frame]);
+    CGFloat thresholdWidth = CGRectGetWidth(self.view.bounds) - self.slideOffset/2.0f;
+    if (CGRectGetMinX([_contentContainerView frame]) <= _leftSnapThreshold && CGRectGetMinX([_contentContainerView frame]) >= 0.0f
+        && contentWidth > thresholdWidth )
     {
         [self hideLeftViewControllerAnimated:YES];
     }
