@@ -39,6 +39,15 @@ typedef enum
 @class MTStackViewController;
 @class MTStackContentContainerView;
 
+#pragma mark - VPStackContentContainerView
+
+@interface MTStackContentContainerView : UIView <UIGestureRecognizerDelegate>
+
+@property (nonatomic, strong) UIView *separatorView;
+@end
+
+#pragma mark - MTStackViewControllerDelegate
+
 @protocol MTStackViewControllerDelegate <NSObject>
 
 @optional
