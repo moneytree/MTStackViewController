@@ -78,13 +78,6 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 
 @end
 
-#pragma mark - VPStackContentContainerView
-
-@interface MTStackContentContainerView : UIView <UIGestureRecognizerDelegate>
-
-@property (nonatomic, strong) UIView *separatorView;
-@end
-
 @implementation MTStackContentContainerView
 
 #pragma mark - UIView Overrides
@@ -609,7 +602,14 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                              id <MTStackChildViewController> childViewController = [self stackChildViewControllerForViewController:[self contentViewController]];
                              if ([childViewController respondsToSelector:@selector(stackViewController:didPanToOffset:)])
                              {
-                                 [childViewController stackViewController:self didPanToOffset:CGRectGetMinX([_contentContainerView frame])];
+                                  // Depending on whether it should resize slide,
+                                  // pass in the right offset
+                                  CGFloat offset = CGRectGetMinX([_contentContainerView frame]);
+                                  if (self.shouldResizeContentViewOnReveal)
+                                  {
+                                      offset = CGRectGetWidth([_contentContainerView frame]);
+                                  }
+                                  [childViewController stackViewController:self didPanToOffset:offset];
                              }
                              
                          }];
