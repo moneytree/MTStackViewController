@@ -218,12 +218,14 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 - (void)setNoSimultaneousPanningViewClasses:(NSArray *)noSimultaneousPanningViewClasses
 {
     _noSimultaneousPanningViewClasses = [noSimultaneousPanningViewClasses copy];
-    
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
     for (id object in [self noSimultaneousPanningViewClasses])
     {
         NSAssert(class_isMetaClass(object_getClass(object)), @"Objects in this array must be of type 'Class'");
         NSAssert([(Class)object isSubclassOfClass:[UIView class]], @"Class objects in this array must be UIView subclasses");
     }
+#pragma clang diagnostic pop
 }
 
 - (void)setShadowColor:(UIColor *)shadowColor
