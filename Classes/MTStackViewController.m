@@ -343,10 +343,11 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
         [newViewController setStackViewController:self];
         [newViewController.view setFrame:[containerView bounds]];
         [self addChildViewController:newViewController];
-        
+
         if (currentViewController)
         {
             [self transitionFromViewController:currentViewController toViewController:newViewController duration:0.0f options:0 animations:nil completion:^(BOOL finished) {
+                [newViewController didMoveToParentViewController:self];
                 [currentViewController removeFromParentViewController];
                 [currentViewController setStackViewController:nil];
             }];
@@ -354,6 +355,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
         else
         {
             [containerView setContentView:[newViewController view]];
+            [newViewController didMoveToParentViewController:self];
         }
     }
     else if (currentViewController)
@@ -478,7 +480,9 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
         if (currentContentViewController)
         {
             [self transitionFromViewController:currentContentViewController toViewController:[self contentViewController] duration:[self contentViewControllerAnimationDuration] options:[self contentViewControllerAnimationOption] animations:nil completion:^(BOOL finished) {
-                
+
+                [self.contentViewController didMoveToParentViewController:self];
+
                 [currentContentViewController removeFromParentViewController];
                 [currentContentViewController setStackViewController:nil];
                 if (snapToContentViewController)
@@ -501,6 +505,8 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
         else
         {
             [_contentContainerView addSubview:[[self contentViewController] view]];
+            [self.contentViewController didMoveToParentViewController:self];
+
             if (snapToContentViewController)
             {
                 if ([self isLeftViewControllerVisible])
