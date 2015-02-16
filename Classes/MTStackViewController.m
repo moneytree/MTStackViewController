@@ -587,7 +587,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
         ([self isRightViewControllerEnabled] && contentViewFrameX < 0.0f) ||
         ([self isRightViewControllerEnabled] && self.shouldResizeContentViewOnReveal && contentViewFrameX > 0.0f))
     {
-        CGFloat percentRevealed = (fabsf(contentViewFrameX) / [self slideOffset]);
+        CGFloat percentRevealed = (fabs(contentViewFrameX) / [self slideOffset]);
       
         // Since we are rolling out to the right (revealing the content view controller)
         // swap the percent revealed
