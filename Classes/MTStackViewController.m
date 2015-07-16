@@ -1119,7 +1119,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 - (CGRect)screenBounds
 {
     CGRect screenBounds = [[UIScreen mainScreen] bounds];
-    if (UIInterfaceOrientationIsLandscape([self interfaceOrientation]))
+    if (UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation]))
         screenBounds.size = CGSizeMake(screenBounds.size.height, screenBounds.size.width);
     
     return screenBounds;
