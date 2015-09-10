@@ -1180,7 +1180,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 
 #pragma mark - Support Rotation
 
-- (NSUInteger)supportedInterfaceOrientations
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations
 {
     return UIInterfaceOrientationMaskPortrait;
 }
