@@ -27,7 +27,7 @@
         [self setAutoresizesSubviews:YES];
         [self setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
         
-        self.parallaxEnabled = YES;
+        self.parallaxEnabled = NO;
         
         _overlayView = [[UIView alloc] initWithFrame:[self bounds]];
         [[self overlayView] setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
