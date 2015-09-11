@@ -95,12 +95,13 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
     return self;
 }
 
-- (void)setFrame:(CGRect)frame
-{
-    [super setFrame:frame];
-    UIBezierPath *shadowPath = [UIBezierPath bezierPathWithRect:[self bounds]];
-    [[self layer] setShadowPath:[shadowPath CGPath]];
-}
+// MT Commented this out. -- RPR 2015-09-11
+//- (void)setFrame:(CGRect)frame
+//{
+//    [super setFrame:frame];
+//    UIBezierPath *shadowPath = [UIBezierPath bezierPathWithRect:[self bounds]];
+//    [[self layer] setShadowPath:[shadowPath CGPath]];
+//}
 
 @end
 
@@ -166,10 +167,11 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
     _leftContainerView = [[MTStackDefaultContainerView alloc] initWithFrame:screenBounds];
     _rightContainerView = [[MTStackDefaultContainerView alloc] initWithFrame:screenBounds];
     _contentContainerView = [[MTStackContentContainerView alloc] initWithFrame:screenBounds];
-    
-    UIView *transitionView = [[UIView alloc] initWithFrame:screenBounds];
-    [_contentContainerView addSubview:transitionView];
-  
+
+  // MT Commented this out. -- RPR 2015-09-11
+//    UIView *transitionView = [[UIView alloc] initWithFrame:screenBounds];
+//    [_contentContainerView addSubview:transitionView];
+
     _tapGestureRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGestureRecognizerDidTap:)];
     
     _panGestureRecognizer = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(panGestureRecognizerDidPan:)];
@@ -834,6 +836,8 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                              [[[self contentContainerView] layer] setShadowRadius:[self minShadowRadius]];
                              [[[self contentContainerView] layer] setShadowOpacity:[self minShadowOpacity]];
                              
+                             [[self contentContainerView] setNeedsLayout];
+                             [[self contentContainerView] layoutIfNeeded];
                          } completion:^(BOOL finished) {
                              
                              if ([self rasterizesViewsDuringAnimation])
@@ -913,20 +917,20 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
     //TODO: Do the same with the left (if resizeContentViewWhenReveal is `NO`)
     CGRect leftFrame = CGRectMake(0.0f, CGRectGetMinY([_leftContainerView frame]),
         CGRectGetWidth([_leftContainerView frame]), CGRectGetHeight([_leftContainerView frame]));
-    
+
     CGRect rightFrame = [_rightContainerView frame];
     if (self.shouldResizeContentViewOnReveal == NO)
     {
         rightFrame.origin.x = CGRectGetWidth(_contentContainerView.frame) - self.slideOffset;
     }
-  
+
     CGRect contentFrame = [_contentContainerView frame];
     contentFrame.origin.x = 0.0f;
     if (self.shouldResizeContentViewOnReveal)
     {
         contentFrame.size.width = CGRectGetWidth(self.view.bounds);
     }
-    
+
     [self.leftContainerView stackViewController:self show:NO
                                            side:MTStackViewControllerPositionLeft
                                         toFrame:leftFrame
@@ -936,12 +940,15 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                                             side:MTStackViewControllerPositionRight
                                          toFrame:rightFrame
                                     withDuration:animationDuration];
-    
+
     [UIView animateWithDuration:animationDuration
                           delay:0.0f
                         options:(UIViewAnimationOptions)(UIViewAnimationOptionCurveEaseOut |UIViewAnimationOptionBeginFromCurrentState)
                      animations:^{
                          [[self contentContainerView] setFrame:contentFrame];
+                         
+                         [[self contentContainerView] setNeedsLayout];
+                         [[self contentContainerView] layoutIfNeeded];
                        
                           // Only does this animation when we are sliding, otherwise its
                           // going to negate the "paralax" effect on the container view.
