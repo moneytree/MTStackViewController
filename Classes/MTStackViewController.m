@@ -217,6 +217,11 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
 
 #pragma mark - Accessors
 
+- (UITapGestureRecognizer *)tapGestureRecognizer
+{
+    return _tapGestureRecognizer;
+}
+
 - (void)setNoSimultaneousPanningViewClasses:(NSArray *)noSimultaneousPanningViewClasses
 {
     _noSimultaneousPanningViewClasses = [noSimultaneousPanningViewClasses copy];
@@ -604,9 +609,9 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                               delay:0.0f
                             options:(UIViewAnimationOptions)(UIViewAnimationOptionCurveLinear | UIViewAnimationOptionBeginFromCurrentState)
                          animations:^{
-                             [self->_contentContainerView setFrame:contentViewRect];
-                             [[self->_contentContainerView layer] setShadowRadius:[self maxShadowRadius] - (([self maxShadowRadius] - [self minShadowRadius]) * percentRevealed)];
-                             [[self->_contentContainerView layer] setShadowOpacity:1.0f - (0.5 * percentRevealed)];
+                             [[self contentContainerView] setFrame:contentViewRect];
+                             [[[self contentContainerView] layer] setShadowRadius:[self maxShadowRadius] - (([self maxShadowRadius] - [self minShadowRadius]) * percentRevealed)];
+                             [[[self contentContainerView] layer] setShadowOpacity:1.0f - (0.5 * percentRevealed)];
                          } completion:^(BOOL finished) {
                              
                              id <MTStackChildViewController> childViewController = [self stackChildViewControllerForViewController:[self contentViewController]];
@@ -614,10 +619,10 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                              {
                                   // Depending on whether it should resize slide,
                                   // pass in the right offset
-                                  CGFloat offset = CGRectGetMinX([self->_contentContainerView frame]);
+                                  CGFloat offset = CGRectGetMinX([[self contentContainerView] frame]);
                                   if (self.shouldResizeContentViewOnReveal)
                                   {
-                                      offset = CGRectGetWidth([self->_contentContainerView frame]);
+                                      offset = CGRectGetWidth([[self contentContainerView] frame]);
                                   }
                                   [childViewController stackViewController:self didPanToOffset:offset];
                              }
@@ -707,22 +712,22 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                             options:(UIViewAnimationOptions)(UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionBeginFromCurrentState)
                          animations:^{
                              
-                             [self->_contentContainerView setFrame:CGRectMake([self slideOffset],
-                                                                        CGRectGetMinY([self->_contentContainerView frame]),
-                                                                        CGRectGetWidth([self->_contentContainerView frame]),
-                                                                        CGRectGetHeight([self->_contentContainerView frame]))];
+                             [[self contentContainerView] setFrame:CGRectMake([self slideOffset],
+                                                                        CGRectGetMinY([[self contentContainerView] frame]),
+                                                                        CGRectGetWidth([[self contentContainerView] frame]),
+                                                                        CGRectGetHeight([[self contentContainerView] frame]))];
                              
                              
-                             [[self->_contentContainerView layer] setShadowRadius:[self minShadowRadius]];
-                             [[self->_contentContainerView layer] setShadowOpacity:[self minShadowOpacity]];
+                             [[[self contentContainerView] layer] setShadowRadius:[self minShadowRadius]];
+                             [[[self contentContainerView] layer] setShadowOpacity:[self minShadowOpacity]];
                              
                          } completion:^(BOOL finished) {
                              
                              if ([self rasterizesViewsDuringAnimation])
                              {
-                                 [[self->_contentContainerView layer] setShouldRasterize:NO];
-                                 [[self->_leftContainerView layer] setShouldRasterize:NO];
-                                 [[self->_rightContainerView layer] setShouldRasterize:NO];
+                                 [[[self contentContainerView] layer] setShouldRasterize:NO];
+                                 [[[self leftContainerView] layer] setShouldRasterize:NO];
+                                 [[[self rightContainerView] layer] setShouldRasterize:NO];
                              }
                              
                              [self setContentViewUserInteractionEnabled:NO];
@@ -730,7 +735,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                               // Only add the tapGestureRecognizer when the `shouldCloseRevealedViewControllerOnTap` is YES.
                               if (self.shouldCloseRevealedViewControllerOnTap)
                               {
-                                  [self->_contentContainerView addGestureRecognizer:self->_tapGestureRecognizer];
+                                  [[self contentContainerView] addGestureRecognizer:[self tapGestureRecognizer]];
                               }
                            
                               if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealLeftViewController:)])
@@ -787,29 +792,29 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                               delay:0.0f
                             options:(UIViewAnimationOptions)(UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionBeginFromCurrentState)
                          animations:^{
-                             [self->_contentContainerView setFrame:finalFrame];
+                             [[self contentContainerView] setFrame:finalFrame];
 
-                             [[self->_contentContainerView layer] setShadowRadius:[self minShadowRadius]];
-                             [[self->_contentContainerView layer] setShadowOpacity:[self minShadowOpacity]];
+                             [[[self contentContainerView] layer] setShadowRadius:[self minShadowRadius]];
+                             [[[self contentContainerView] layer] setShadowOpacity:[self minShadowOpacity]];
 
 
-                           [self->_contentContainerView setNeedsLayout];
-                           [self->_contentContainerView layoutIfNeeded];
+                           [[self contentContainerView] setNeedsLayout];
+                           [[self contentContainerView] layoutIfNeeded];
 
                          } completion:^(BOOL finished) {
                              
                              if ([self rasterizesViewsDuringAnimation])
                              {
-                                 [[self->_contentContainerView layer] setShouldRasterize:NO];
-                                 [[self->_leftContainerView layer] setShouldRasterize:NO];
-                                 [[self->_rightContainerView layer] setShouldRasterize:NO];
+                                 [[[self contentContainerView] layer] setShouldRasterize:NO];
+                                 [[[self leftContainerView] layer] setShouldRasterize:NO];
+                                 [[[self rightContainerView] layer] setShouldRasterize:NO];
                              }
                              [self setContentViewUserInteractionEnabled:NO];
 
                               // Only add the tapGestureRecognizer when the `shouldCloseRevealedViewControllerOnTap` is YES.
                               if (self.shouldCloseRevealedViewControllerOnTap)
                               {
-                                  [self->_contentContainerView addGestureRecognizer:self->_tapGestureRecognizer];
+                                  [[self contentContainerView] addGestureRecognizer:[self tapGestureRecognizer]];
                               }
                              
                               if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealRightViewController:)])
@@ -903,28 +908,28 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                           delay:0.0f
                         options:(UIViewAnimationOptions)(UIViewAnimationOptionCurveEaseOut |UIViewAnimationOptionBeginFromCurrentState)
                      animations:^{
-                         [self->_contentContainerView setFrame:contentFrame];
+                         [[self contentContainerView] setFrame:contentFrame];
 
-                          [self->_contentContainerView setNeedsLayout];
-                          [self->_contentContainerView layoutIfNeeded];
+                          [[self contentContainerView] setNeedsLayout];
+                          [[self contentContainerView] layoutIfNeeded];
                        
                           // Only does this animation when we are sliding, otherwise its
                           // going to negate the "paralax" effect on the container view.
                           if (self.shouldResizeContentViewOnReveal == NO)
                           {
-                              [[self->_contentContainerView layer] setShadowRadius:[self maxShadowRadius]];
-                              [[self->_contentContainerView layer] setShadowOpacity:[self maxShadowOpacity]];
+                              [[[self contentContainerView] layer] setShadowRadius:[self maxShadowRadius]];
+                              [[[self contentContainerView] layer] setShadowOpacity:[self maxShadowOpacity]];
                           }
                      } completion:^(BOOL finished) {
                          if ([self rasterizesViewsDuringAnimation])
                          {
-                             [[self->_contentContainerView layer] setShouldRasterize:NO];
-                             [[self->_leftContainerView layer] setShouldRasterize:NO];
-                             [[self->_rightContainerView layer] setShouldRasterize:NO];
+                             [[[self contentContainerView] layer] setShouldRasterize:NO];
+                             [[[self leftContainerView] layer] setShouldRasterize:NO];
+                             [[[self rightContainerView] layer] setShouldRasterize:NO];
                          }
                          
                          [self setContentViewUserInteractionEnabled:YES];
-                         [self->_tapGestureRecognizer.view removeGestureRecognizer:self->_tapGestureRecognizer];
+                         [[self tapGestureRecognizer].view removeGestureRecognizer:[self tapGestureRecognizer]];
                          
                          if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealContentViewController:)])
                          {
