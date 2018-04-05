@@ -25,12 +25,12 @@
     if (self)
     {
         [self setAutoresizesSubviews:YES];
-        [self setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
+        [self setAutoresizingMask:(UIViewAutoresizing)(UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth)];
         
         self.parallaxEnabled = NO;
         
         _overlayView = [[UIView alloc] initWithFrame:[self bounds]];
-        [[self overlayView] setAutoresizingMask:UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth];
+        [[self overlayView] setAutoresizingMask:(UIViewAutoresizing)(UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth)];
         [[self overlayView] setAlpha:1.0f];
         self.overlayView.backgroundColor = [UIColor blackColor];
         [self addSubview:_overlayView];
@@ -69,7 +69,7 @@
     CGRect realRect = CGRectMake(x, CGRectGetMinY(rect), CGRectGetWidth(rect), CGRectGetHeight(rect));
     [UIView animateWithDuration:duration
                           delay:0.0f
-                        options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionBeginFromCurrentState
+                        options:(UIViewAnimationOptions)(UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionBeginFromCurrentState)
                      animations:^{
                          self.overlayView.alpha = show ? 0.0f : 0.7f;
                          self.frame = realRect;

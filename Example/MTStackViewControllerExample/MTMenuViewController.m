@@ -75,14 +75,14 @@ static NSString *const MTTableViewCellIdentifier = @"MTTableViewCell";
 
 - (void)configureCell:(UITableViewCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
-    [[cell textLabel] setText:[NSString stringWithFormat:@"View Controller %d", [indexPath row]]];
+    [[cell textLabel] setText:[NSString stringWithFormat:@"View Controller %ld", (long)[indexPath row]]];
 }
 
 - (UIViewController *)contentViewcontrollerForIndexPath:(NSIndexPath *)indexPath
 {
     UIViewController *viewController = [UIViewController new];
     [[viewController view] setBackgroundColor:_datasource[[indexPath row]]];
-    [[viewController navigationItem] setTitle:[NSString stringWithFormat:@"View Controller %d", [indexPath row]]];
+  [[viewController navigationItem] setTitle:[NSString stringWithFormat:@"View Controller %ld", (long)[indexPath row]]];
     
     UIBarButtonItem *menuBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Menu" style:UIBarButtonItemStyleBordered target:[self stackViewController] action:@selector(toggleLeftViewController)];
     [[viewController navigationItem] setLeftBarButtonItem:menuBarButtonItem];
