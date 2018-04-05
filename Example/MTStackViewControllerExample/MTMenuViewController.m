@@ -82,7 +82,7 @@ static NSString *const MTTableViewCellIdentifier = @"MTTableViewCell";
 {
     UIViewController *viewController = [UIViewController new];
     [[viewController view] setBackgroundColor:_datasource[[indexPath row]]];
-    [[viewController navigationItem] setTitle:[NSString stringWithFormat:@"View Controller %d", (long)[indexPath row]]];
+  [[viewController navigationItem] setTitle:[NSString stringWithFormat:@"View Controller %ld", (long)[indexPath row]]];
     
     UIBarButtonItem *menuBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Menu" style:UIBarButtonItemStyleBordered target:[self stackViewController] action:@selector(toggleLeftViewController)];
     [[viewController navigationItem] setLeftBarButtonItem:menuBarButtonItem];
