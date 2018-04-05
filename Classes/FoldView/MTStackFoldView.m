@@ -109,7 +109,7 @@
     
     [UIView animateWithDuration:duration
                           delay:0.0f
-                        options:UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionBeginFromCurrentState
+                        options:(UIViewAnimationOptions)(UIViewAnimationOptionCurveEaseOut | UIViewAnimationOptionBeginFromCurrentState)
                      animations:^{
                          [self animateToFraction: show ? 1.0 : 0.0f ];
                      }
@@ -153,7 +153,7 @@
 {
     [UIView animateWithDuration:stackViewController.trackingAnimationDuration
                           delay:0.0f
-                        options:UIViewAnimationOptionCurveLinear | UIViewAnimationOptionBeginFromCurrentState
+                        options:(UIViewAnimationOptions)(UIViewAnimationOptionCurveLinear | UIViewAnimationOptionBeginFromCurrentState)
                      animations:^{
                          [self animateToFraction: offset ];
                      }
