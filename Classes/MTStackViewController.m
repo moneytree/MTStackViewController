@@ -774,7 +774,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                               // Only add the tapGestureRecognizer when the `shouldCloseRevealedViewControllerOnTap` is YES.
                               if (self.shouldCloseRevealedViewControllerOnTap)
                               {
-                                  [_contentContainerView addGestureRecognizer:_tapGestureRecognizer];
+                                  [[self contentContainerView] addGestureRecognizer:[self tapGestureRecognizer]];
                               }
                            
                               if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealLeftViewController:)])
@@ -851,7 +851,7 @@ const char *MTStackViewControllerKey = "MTStackViewControllerKey";
                               // Only add the tapGestureRecognizer when the `shouldCloseRevealedViewControllerOnTap` is YES.
                               if (self.shouldCloseRevealedViewControllerOnTap)
                               {
-                                  [_contentContainerView addGestureRecognizer:_tapGestureRecognizer];
+                                  [[self contentContainerView] addGestureRecognizer:[self tapGestureRecognizer]];
                               }
                              
                               if ([[self delegate] respondsToSelector:@selector(stackViewController:didRevealRightViewController:)])
